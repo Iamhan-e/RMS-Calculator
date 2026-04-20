@@ -223,5 +223,29 @@ def verify_parseval(signal: np.ndarray) -> dict:
         'verified': relative_error < 1e-10
     }
 
+def analyze_snr_impact(v_clean: np.ndarray, noise_levels: np.ndarray) -> dict:
+    """
+    Analyze how SNR affects RMS measurement accuracy.
+    
+    Returns dict with 'snr_db', 'rms_error_percent', 'rms_values'
+    """
+    rms_clean = rms_manual(v_clean)
+    results = {'snr_db': [], 'rms_error_percent': [], 'rms_values': []}
+    
+    for sigma in noise_levels:
+        v_noisy = add_noise(v_clean, sigma)
+        rms_noisy = rms_manual(v_noisy)
+        
+        snr = 20 * np.log10(rms_clean / sigma)
+        error_percent = (rms_noisy - rms_clean) / rms_clean * 100
+        
+        results['snr_db'].append(snr)
+        results['rms_error_percent'].append(error_percent)
+        results['rms_values'].append(rms_noisy)
+    
+    return results
+
+
+
 
 
