@@ -1,4 +1,5 @@
 # src/rms.py
+
 """
 Core RMS utilities
 -----------------
@@ -155,3 +156,6 @@ def highpass(v: np.ndarray, fs: float, cutoff: float = 0.5) -> np.ndarray:
     for n in range(1, len(v)):
         y[n] = alpha * (y[n - 1] + v[n] - v[n - 1])
     return y
+
+
+
