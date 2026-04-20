@@ -202,5 +202,26 @@ def compute_thd(signal: np.ndarray, fs: float, freq_fundamental: float,
         'fundamental_amplitude': fundamental_rms
     }
 
+def verify_parseval(signal: np.ndarray) -> dict:
+    """
+    Verify Parseval's theorem: Time domain power equals frequency domain power.
+    
+    Returns dict with 'time_power', 'freq_power', 'relative_error_percent', 'verified'
+    """
+    time_power = np.mean(signal ** 2)
+    
+    N = len(signal)
+    fft_vals = np.fft.fft(signal)
+    freq_power = np.sum(np.abs(fft_vals) ** 2) / (N ** 2)
+    
+    relative_error = np.abs(time_power - freq_power) / time_power * 100
+    
+    return {
+        'time_power': time_power,
+        'freq_power': freq_power,
+        'relative_error_percent': relative_error,
+        'verified': relative_error < 1e-10
+    }
+
 
 
