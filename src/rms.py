@@ -247,5 +247,25 @@ def analyze_snr_impact(v_clean: np.ndarray, noise_levels: np.ndarray) -> dict:
 
 
 
+def detect_frequency(signal: np.ndarray, fs: float, threshold_percent: float = 10) -> float:
+    """
+    Detect fundamental frequency using zero-crossing detection.
+    """
+    signal_ac = signal - np.mean(signal)
+    
+    zero_crossings = []
+    for i in range(1, len(signal_ac)):
+        if signal_ac[i-1] < 0 and signal_ac[i] >= 0:
+            zero_crossings.append(i)
+    
+    if len(zero_crossings) < 2:
+        return 0.0
+    
+    periods = [zero_crossings[i] - zero_crossings[i-1] for i in range(1, len(zero_crossings))]
+    avg_period_samples = np.mean(periods)
+    frequency = fs / avg_period_samples
+    
+    return frequency
+
 
 
