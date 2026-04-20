@@ -268,4 +268,36 @@ def detect_frequency(signal: np.ndarray, fs: float, threshold_percent: float = 1
     return frequency
 
 
-
+def power_quality_analyzer(signal: np.ndarray, fs: float, freq_nominal: float = 50.0) -> dict:
+    """
+    Complete power quality analyzer - all metrics in one function.
+    """
+    vrms = rms_manual(signal)
+    vpeak = np.max(np.abs(signal))
+    dc_offset = np.mean(signal)
+    crest_factor = vpeak / vrms if vrms > 0 else 0
+    detected_freq = detect_frequency(signal, fs)
+    thd_results = compute_thd(signal, fs, freq_nominal)
+    
+    # Quality assessment
+    issues = []
+    if thd_results['thd_percent'] > 8:
+        issues.append(f"High THD ({thd_results['thd_percent']:.1f}% > 8%)")
+    elif thd_results['thd_percent'] > 5:
+        issues.append(f"Marginal THD ({thd_results['thd_percent']:.1f}% > 5%)")
+    if crest_factor > 1.5:
+        issues.append(f"High crest factor ({crest_factor:.2f} > 1.5)")
+    if abs(dc_offset) > 0.5:
+        issues.append(f"DC offset ({dc_offset:.2f}V)")
+    
+    quality = "Good power quality" if not issues else "Poor quality: " + "; ".join(issues)
+    
+    return {
+        'vrms': vrms,
+        'vpeak': vpeak,
+        'crest_factor': crest_factor,
+        'frequency_hz': detected_freq,
+        'dc_offset_v': dc_offset,
+        'thd_percent': thd_results['thd_percent'],
+        'quality_assessment': quality
+    }
