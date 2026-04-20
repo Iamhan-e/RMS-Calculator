@@ -167,6 +167,40 @@ def add_harmonic(v: np.ndarray, harmonic_order: int, amplitude_ratio: float,
     harmonic = harmonic_amplitude * np.sin(2 * np.pi * harmonic_order * freq_fundamental * t)
     return v + harmonic
 
+def compute_thd(signal: np.ndarray, fs: float, freq_fundamental: float, 
+                num_harmonics: int = 10) -> dict:
+    
+    N = len(signal)
+    fft_vals = np.fft.rfft(signal)
+    fft_mag = np.abs(fft_vals) / N
+    freqs = np.fft.rfftfreq(N, 1/fs)
+    
+    fundamental_bin = int(freq_fundamental * N / fs)
+    fundamental_peak = fft_mag[fundamental_bin] * 2
+    fundamental_rms = fundamental_peak / np.sqrt(2)
+    
+    harmonic_rms_values = []
+    harmonic_freqs = []
+    
+    for h in range(2, num_harmonics + 1):
+        harmonic_freq = h * freq_fundamental
+        harmonic_bin = int(harmonic_freq * N / fs)
+        
+        if harmonic_bin < len(fft_mag):
+            harmonic_peak = fft_mag[harmonic_bin] * 2
+            harmonic_rms = harmonic_peak / np.sqrt(2)
+            harmonic_rms_values.append(harmonic_rms)
+            harmonic_freqs.append(harmonic_freq)
+    
+    thd_value = np.sqrt(np.sum(np.array(harmonic_rms_values)**2)) / fundamental_rms
+    thd_percent = thd_value * 100
+    
+    return {
+        'thd_percent': thd_percent,
+        'harmonic_amplitudes': harmonic_rms_values,
+        'frequencies': harmonic_freqs,
+        'fundamental_amplitude': fundamental_rms
+    }
 
 
 
