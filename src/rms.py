@@ -158,4 +158,15 @@ def highpass(v: np.ndarray, fs: float, cutoff: float = 0.5) -> np.ndarray:
     return y
 
 
+def add_harmonic(v: np.ndarray, harmonic_order: int, amplitude_ratio: float, 
+                 freq_fundamental: float, fs: float) -> np.ndarray:
+    
+    t = np.arange(len(v)) / fs
+    fundamental_amplitude = (np.max(v) - np.min(v)) / 2
+    harmonic_amplitude = amplitude_ratio * fundamental_amplitude
+    harmonic = harmonic_amplitude * np.sin(2 * np.pi * harmonic_order * freq_fundamental * t)
+    return v + harmonic
+
+
+
 
