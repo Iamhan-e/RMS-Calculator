@@ -1,281 +1,243 @@
-# Theory of RMS, Noise, and DC Offset  
-*(foundation for the RMS‑Calculator repository)*  
+# Theory of RMS, Power Quality, and Signal Analysis
+*(foundation for the RMS-Calculator repository)*
 
 ---
 
-## 1. What is RMS?  
+## 1. What is RMS?
 
-For a discrete signal \(x[n]\) sampled at \(f_s\) Hz, the **Root‑Mean‑Square** (RMS) is  
+For a discrete signal $x[n]$ sampled at $f_s$ Hz, the **Root-Mean-Square** value is:
 
-\[
-\boxed{\displaystyle
-\text{RMS}(x) \;=\; \sqrt{\frac{1}{N}\sum_{n=0}^{N-1} x[n]^{2}}}
-\]
+$$\text{RMS}(x) = \sqrt{\frac{1}{N} \sum_{n=0}^{N-1} x[n]^2}$$
 
-- The **square** converts all values to positive power.  
-- The **mean** (\(\frac{1}{N}\sum\)) averages that power over the observation window.  
-- The **square‑root** brings the quantity back to the original units (volts, amps, …).  
+Breaking it down step by step:
 
-RMS is the **DC voltage that would dissipate the same average power** in a resistive load as the original AC waveform.
+- **Square** every sample — converts all values to positive "power" quantities
+- **Mean** — average that power across all $N$ samples in the window
+- **Square-root** — bring the result back to the original units (volts, amps, etc.)
 
----
-
-## 2. RMS of a Pure Sine  
-
-A sinusoid with peak amplitude \(V_{\text{pk}}\)  
-
-\[
-v(t)=V_{\text{pk}}\sin(2\pi f t)
-\]
-
-has an analytic RMS
-
-\[
-\boxed{\displaystyle V_{\text{RMS}} = \frac{V_{\text{pk}}}{\sqrt{2}}}
-\]
-
-*Proof*: over one full period the average of \(\sin^{2}\) equals \(\frac12\).
+RMS is the **DC equivalent voltage**: the constant value that would dissipate the same average power in a resistive load as the original AC waveform.
 
 ---
 
-## 3. How Noise Affects RMS  
+## 2. RMS of a Pure Sine Wave
 
-Assume additive zero‑mean Gaussian noise \(n(t)\sim\mathcal N(0,\sigma^{2})\) that is statistically independent of the sine:
+A sinusoid with peak amplitude $V_{pk}$ is defined as:
 
-\[
-v_{\text{total}}(t)=v(t)+n(t)
-\]
+$$v(t) = V_{pk} \cdot \sin(2\pi f t)$$
 
-Because the cross‑term \(\langle v\,n\rangle =0\),
+Its RMS value has a clean closed form:
 
-\[
-\begin{aligned}
-\text{RMS}^{2}_{\text{total}}
-  &= \frac{1}{T}\int_0^{T}\bigl(v(t)+n(t)\bigr)^{2}\,dt\\
-  &= \underbrace{\frac{1}{T}\int_0^{T}v^{2}(t)\,dt}_{V_{\text{RMS}}^{2}}
-     +\underbrace{\frac{1}{T}\int_0^{T}n^{2}(t)\,dt}_{\sigma^{2}} 
-\end{aligned}
-\]
+$$\boxed{V_{RMS} = \frac{V_{pk}}{\sqrt{2}} \approx 0.707 \cdot V_{pk}}$$
 
-Hence **noise adds in quadrature**:
+**Why?** Over one full period, the average of $\sin^2$ is exactly $\frac{1}{2}$, so $\sqrt{\text{mean}(\sin^2)} = \frac{1}{\sqrt{2}}$.
 
-\[
-\boxed{\displaystyle 
-\text{RMS}_{\text{total}} = \sqrt{V_{\text{RMS}}^{2} + \sigma^{2}}}
-\]
+**Example — Ethiopian mains supply (230 V RMS):**
 
-The larger the noise standard deviation, the larger the measured RMS.
+$$V_{pk} = 230 \times \sqrt{2} \approx 325 \text{ V}$$
 
 ---
 
-## 4. How a DC Offset Affects RMS  
+## 3. How Noise Affects RMS
 
-If a constant bias \(V_{\text{DC}}\) is added:
+Add zero-mean Gaussian noise $n(t) \sim \mathcal{N}(0, \sigma^2)$, independent of the signal:
 
-\[
-v_{\text{bias}}(t) = v(t) + V_{\text{DC}}
-\]
+$$v_{total}(t) = v(t) + n(t)$$
 
-the RMS becomes
+Because the noise and signal are uncorrelated, their cross-term averages to zero. Squaring and integrating gives:
 
-\[
-\boxed{\displaystyle 
-\text{RMS}_{\text{bias}} = \sqrt{V_{\text{RMS}}^{2}+V_{\text{DC}}^{2}}}
-\]
+$$\text{RMS}_{total}^2 = V_{RMS}^2 + \sigma^2$$
 
-The DC term never cancels, so even a modest offset inflates the RMS value.
+Taking the square root:
+
+$$\boxed{\text{RMS}_{total} = \sqrt{V_{RMS}^2 + \sigma^2}}$$
+
+**Key insight — noise adds in quadrature.** It always inflates RMS, never reduces it, and the relationship is nonlinear: small noise has very little effect, but large noise dominates.
+
+| Noise std $\sigma$ (relative to $V_{RMS}$) | RMS inflation |
+|---|---|
+| 1 % | +0.005 % |
+| 5 % | +0.12 % |
+| 10 % | +0.50 % |
+| 50 % | +11.8 % |
 
 ---
 
-## 5. Rolling (Moving‑Average) RMS  
+## 4. How a DC Offset Affects RMS
 
-A **rolling RMS** computes the RMS over a sliding window of length \(T_{\text{win}}\) (or \(W\) samples):
+If a constant bias $V_{DC}$ is present (e.g., from sensor output offset):
 
-\[
-\text{RMS}_{k}
-  = \sqrt{\frac{1}{W} \sum_{n=k}^{k+W-1} x[n]^{2}}
-\]
+$$v_{bias}(t) = v(t) + V_{DC}$$
 
-In the *squared* domain this is precisely a **moving‑average (MA) filter** with impulse response  
+The DC term contributes permanently to the squared mean:
 
-\[
-h[n] = \frac{1}{W}\;\;(0\le n < W)
-\]
+$$\boxed{\text{RMS}_{bias} = \sqrt{V_{RMS}^2 + V_{DC}^2}}$$
 
-### Frequency response
+The DC component never cancels, even though it carries no AC power. **Always strip DC before computing RMS** — use a high-pass filter with a cutoff well below mains frequency (e.g., 0.5 Hz).
 
-The magnitude of the MA filter is  
+---
 
-\[
-|H(e^{j\omega})|
-   = \frac{1}{W}\Bigl|\frac{\sin(\omega W/2)}{\sin(\omega/2)}\Bigr|
-\]
+## 5. Rolling (Moving-Average) RMS
 
-Key characteristic:
+A **rolling RMS** tracks power over time by computing RMS within a sliding window of $W$ samples:
 
-- **3‑dB cutoff** (approximate)  
+$$\text{RMS}_k = \sqrt{\frac{1}{W} \sum_{n=k}^{k+W-1} x[n]^2}$$
 
-\[
-f_{\text{c}} \;\approx\; \frac{0.443}{T_{\text{win}}}
-\]
+In the squared domain, this is a **moving-average (MA) filter** with impulse response:
 
-- **First null** occurs at \(f = \frac{1}{T_{\text{win}}}\).
+$$h[n] = \frac{1}{W}, \quad 0 \leq n < W$$
 
-### Implications for a 50 Hz mains signal  
+### Frequency Response
 
-| Window length | Approx. cutoff | Relation to 50 Hz |
-|---------------|----------------|-------------------|
-| **5 ms** (0.005 s) | \(f_{\text{c}}\approx 88\) Hz | Cutoff > 50 Hz → the 50 Hz component passes → the rolling RMS still **wiggles** (looks sinusoidal). |
-| **20 ms** (one period) | \(f_{\text{c}}\approx 22\) Hz | Cutoff < 50 Hz → the fundamental is strongly attenuated → the rolling RMS settles to a **flat** value equal to the true RMS. |
-| **50 ms** (2.5 cycles) | \(f_{\text{c}}\approx 9\) Hz | Even more smoothing; ideal for power‑measurement where only the DC component of \(x^{2}\) matters. |
+The MA filter's magnitude response is:
 
-**Bottom line:** a window **shorter than one mains period** does **not** remove the AC component; the RMS estimator continues to follow the waveform. Use a window **≥ one period** for an accurate power average, or deliberately use a short window for envelope‑tracking or rapid fault detection (accept the ripple).
+$$|H(e^{j\omega})| = \frac{1}{W} \left| \frac{\sin(\omega W / 2)}{\sin(\omega / 2)} \right|$$
+
+Its approximate 3 dB cutoff frequency is:
+
+$$f_c \approx \frac{0.443}{T_{win}}$$
+
+where $T_{win} = W / f_s$ is the window duration in seconds.
+
+### Window Length Guide for 50 Hz Mains
+
+| Window | Cutoff $f_c$ | What you see |
+|--------|-------------|--------------|
+| **5 ms** | ~88 Hz | $f_c > 50$ Hz — the fundamental passes through — RMS **wiggles** sinusoidally |
+| **20 ms** (1 period) | ~22 Hz | $f_c < 50$ Hz — fundamental is attenuated — RMS settles to a **flat** true value |
+| **50 ms** (2.5 cycles) | ~9 Hz | Extra smooth — ideal for power metering |
+
+**Rule of thumb:** use a window **at least one mains period long** for accurate power averaging. Use a shorter window only when you need fast transient or fault detection and can accept ripple in the RMS reading.
 
 ---
 
 ## 6. Total Harmonic Distortion (THD)
 
-Real-world mains waveforms are never pure sinusoids. Non-linear loads (switched-mode power supplies, variable-speed drives, rectifiers) draw current in pulses, injecting harmonic frequencies at integer multiples of the fundamental:
+Real mains waveforms are never pure sinusoids. Non-linear loads — switched-mode power supplies, variable-speed drives, rectifiers — inject energy at integer multiples of the fundamental:
 
-\[
-v(t) = V_1\sin(2\pi f_1 t + \phi_1)
-      + \sum_{h=2}^{H} V_h\sin(2\pi h f_1 t + \phi_h)
-\]
+$$v(t) = V_1 \sin(2\pi f_1 t + \phi_1) + \sum_{h=2}^{H} V_h \sin(2\pi h f_1 t + \phi_h)$$
 
-**Total Harmonic Distortion** quantifies how much of the signal's energy lives in those harmonics relative to the fundamental:
+**THD** measures how much of the total signal energy lives in harmonics, relative to the fundamental:
 
-\[
-\boxed{\displaystyle
-\text{THD} = \frac{\sqrt{\sum_{h=2}^{H} V_{h,\text{RMS}}^{2}}}{V_{1,\text{RMS}}} \times 100\%}
-\]
+$$\boxed{\text{THD} = \frac{\sqrt{V_{2,RMS}^2 + V_{3,RMS}^2 + \cdots + V_{H,RMS}^2}}{V_{1,RMS}} \times 100\%}$$
 
-### Computing THD via FFT
+### How `compute_thd()` Works
 
-`compute_thd()` uses the FFT to extract harmonic amplitudes efficiently:
-
-1. Compute the N-point FFT of the signal.
-2. Locate the bin at \(f_1\) and read the peak amplitude \(\hat{V}_1 = 2|X[k_1]|/N\).
-3. Convert to RMS: \(V_{1,\text{RMS}} = \hat{V}_1/\sqrt{2}\).
-4. Repeat for harmonics \(h = 2, 3, \ldots, H\).
-5. Apply the THD formula above.
+1. Compute the $N$-point FFT of the signal
+2. Find the fundamental bin at $f_1$: peak amplitude $\hat{V}_1 = 2|X[k_1]| / N$, RMS value $V_{1,RMS} = \hat{V}_1 / \sqrt{2}$
+3. Repeat for each harmonic $h = 2, 3, \ldots, H$
+4. Plug into the THD formula
 
 ### Industry Thresholds (IEEE 519)
 
 | THD | Assessment |
 |-----|------------|
-| < 5 % | Good power quality |
-| 5-8 % | Marginal - investigate |
-| > 8 % | Poor - corrective action needed |
+| < 5 % | Good — clean power |
+| 5 – 8 % | Marginal — investigate the load |
+| > 8 % | Poor — corrective action required |
 
-**Why it matters for RMS:** harmonic content inflates the measured RMS beyond \(V_{1,\text{RMS}}\). The true RMS of a distorted waveform is
+### Why THD Inflates RMS
 
-\[
-V_\text{RMS} = \sqrt{V_{1,\text{RMS}}^{2} + \sum_{h=2}^{H} V_{h,\text{RMS}}^{2}}
-\]
+The total RMS of a distorted waveform includes all harmonic power:
 
-A meter that reports RMS without accounting for harmonics is over-reporting useful (fundamental) power.
+$$V_{RMS,total} = \sqrt{V_{1,RMS}^2 + V_{2,RMS}^2 + \cdots + V_{H,RMS}^2}$$
+
+A meter reporting total RMS on a distorted waveform is over-counting — it includes harmonic power that heats cables but does no useful work.
 
 ---
 
 ## 7. Parseval's Theorem
 
-Parseval's theorem states that total signal power is conserved between the time and frequency domains:
+Power is conserved between the time and frequency domains:
 
-\[
-\boxed{\displaystyle
-\frac{1}{N}\sum_{n=0}^{N-1}|x[n]|^{2}
-  \;=\;
-\frac{1}{N^{2}}\sum_{k=0}^{N-1}|X[k]|^{2}}
-\]
+$$\frac{1}{N} \sum_{n=0}^{N-1} |x[n]|^2 \;=\; \frac{1}{N^2} \sum_{k=0}^{N-1} |X[k]|^2$$
 
-where \(X[k]\) is the N-point DFT of \(x[n]\).
+where $X[k]$ is the $N$-point DFT of $x[n]$.
 
-### Why it is useful here
+In plain English: **the total power computed by squaring and averaging the time samples equals the total power computed by summing the squared FFT bins.**
 
-- **Sanity check.** `verify_parseval()` computes both sides and reports the relative error. Any deviation larger than \(10^{-10}\) indicates a numerical issue or a bug in the FFT pipeline.
-- **Power decomposition.** Because power adds linearly in the frequency domain, you can attribute exactly how much power each harmonic contributes - the basis of the THD calculation above.
-- **Regression test.** Any correctly implemented `rms_manual()` on a windowed signal must satisfy Parseval's equality. Run `verify_parseval()` after any change to the DSP chain.
+### Why It Matters Here
+
+| Use | How |
+|-----|-----|
+| **Sanity check** | `verify_parseval()` computes both sides and reports the relative error. Deviation > $10^{-10}$ signals a numerical bug |
+| **Power decomposition** | Frequency bins add independently, so you can attribute exactly how much power each harmonic contributes — the mathematical backbone of THD |
+| **Regression test** | Run `verify_parseval()` after any DSP change to confirm the pipeline still conserves energy |
 
 ---
 
 ## 8. SNR and RMS Measurement Accuracy
 
-The Signal-to-Noise Ratio (SNR) describes how much the signal power dominates the noise power, expressed in dB:
+Signal-to-Noise Ratio in dB:
 
-\[
-\text{SNR} = 20\log_{10}\!\left(\frac{V_\text{RMS}}{\sigma}\right) \text{ dB}
-\]
+$$\text{SNR} = 20 \log_{10}\!\left(\frac{V_{RMS}}{\sigma}\right) \text{ dB}$$
 
-From Section 3, the measured RMS of a noisy signal is \(\sqrt{V_\text{RMS}^{2}+\sigma^{2}}\). The **relative RMS error** is therefore:
+From Section 3, the measured RMS of a noisy signal is $\sqrt{V_{RMS}^2 + \sigma^2}$. The **relative RMS error** is:
 
-\[
-\varepsilon_\text{RMS}
-  = \frac{\sqrt{V_\text{RMS}^{2}+\sigma^{2}} - V_\text{RMS}}{V_\text{RMS}}
-  = \sqrt{1 + \text{SNR}_\text{linear}^{-2}} - 1
-\]
+$$\varepsilon_{RMS} = \frac{\sqrt{V_{RMS}^2 + \sigma^2} \;-\; V_{RMS}}{V_{RMS}} = \sqrt{1 + \frac{1}{\text{SNR}_{linear}^2}} - 1$$
 
-### Practical SNR targets
+### Accuracy Targets
 
 | SNR | Approx. RMS error |
-|-----|-------------------|
+|-----|-----------|
 | 40 dB | < 0.5 % |
 | 30 dB | ~1.6 % |
 | 20 dB | ~4.9 % |
 | 10 dB | ~21 % |
 
-`analyze_snr_impact()` sweeps a range of \(\sigma\) values and plots these curves, letting you verify your ADC and analog front-end meet the accuracy budget before committing to hardware.
+`analyze_snr_impact()` sweeps a range of $\sigma$ values and plots these curves — use it to confirm your ADC and analog front-end meet the accuracy budget before committing to hardware.
 
 ---
 
 ## 9. Crest Factor
 
-The **crest factor** (CF) is the ratio of peak to RMS:
+The **crest factor** is the ratio of peak amplitude to RMS:
 
-\[
-\boxed{\displaystyle
-\text{CF} = \frac{|v|_\text{peak}}{V_\text{RMS}}}
-\]
+$$\boxed{CF = \frac{|v|_{peak}}{V_{RMS}}}$$
 
-For a pure sine: \(\text{CF} = \sqrt{2} \approx 1.414\). Deviations from this baseline reveal waveform shape:
-
-| Signal | Crest Factor |
-|--------|-------------|
-| Pure sine | \(\sqrt{2} \approx 1.41\) |
+| Waveform | Crest Factor |
+|----------|-------------|
+| Pure sine | $\sqrt{2} \approx 1.41$ |
 | Square wave | 1.00 |
-| Heavily distorted / peaky | > 1.5 |
+| Triangle wave | $\sqrt{3} \approx 1.73$ |
+| Distorted / spiky | > 1.5 (warning zone) |
 
-A crest factor above **1.5** is flagged by `power_quality_analyzer()` as a warning: short, high-amplitude current spikes are occurring (typical of switched-mode supplies), which stresses wiring and transformers beyond what the RMS figure alone suggests.
+A crest factor above **1.5** — flagged by `power_quality_analyzer()` — indicates short, high-amplitude current spikes. This is typical of switched-mode power supplies and stresses wiring and transformers beyond what the RMS figure alone implies.
 
 ---
 
 ## 10. Fundamental Frequency Detection
 
-`detect_frequency()` uses **zero-crossing detection** on the AC component of the signal:
+`detect_frequency()` estimates $f_1$ using **zero-crossing detection**:
 
-1. Remove the DC mean: \(\tilde{x}[n] = x[n] - \bar{x}\).
-2. Find all indices where \(\tilde{x}\) crosses zero from negative to positive.
-3. Average the spacing between consecutive crossings to estimate the period in samples \(T_s\).
-4. Return \(f = f_s / T_s\).
+1. Remove DC: $\tilde{x}[n] = x[n] - \bar{x}$
+2. Find all sample indices where $\tilde{x}$ crosses zero from negative to positive
+3. Average the spacing between consecutive crossings to get the period $T_s$ in samples
+4. Return $f = f_s / T_s$
 
-This method is computationally cheap and works well for low-distortion signals. For heavily distorted waveforms, the FFT-bin approach used inside `compute_thd()` is more robust - the dominant peak in the spectrum reliably locates the fundamental even when zero-crossings are noisy.
+This is computationally cheap and accurate for low-distortion signals. For heavily distorted waveforms, use the FFT-bin approach inside `compute_thd()` instead — the dominant spectral peak reliably locates the fundamental even when zero-crossings are noisy or irregular.
 
 ---
 
 ## 11. Practical Take-aways for an Energy Monitor
 
-1. **Strip DC before RMS.** Use `highpass()` (cutoff ~0.5 Hz) to reject sensor bias before calling `rms_manual()`. Even a small offset on a low-amplitude current sensor produces a disproportionate RMS error.
+1. **Strip DC before computing RMS.**
+   High-pass filter at ~0.5 Hz before calling `rms_manual()`. Even a small bias inflates your reading — especially on low-amplitude current sensors where $V_{DC}$ can be comparable to $V_{RMS}$.
 
-2. **Choose the rolling window wisely:**
-   - *Power-quality monitoring*: >= 1 period (~20 ms for 50 Hz).
-   - *Transient / fault detection*: 0.5-1 period (10-20 ms) - faster response, modest ripple.
+2. **Choose your rolling window carefully.**
+   - Power-quality monitoring → window ≥ 1 mains period (~20 ms at 50 Hz)
+   - Transient / fault detection → 0.5–1 period (10–20 ms), faster response but ripple is visible
 
-3. **Budget for noise.** If ADC quantisation noise has std \(\sigma\), the RMS is inflated by \(\sqrt{V_\text{RMS}^{2}+\sigma^{2}}\). Oversampling or a front-end anti-alias filter reduces \(\sigma\) directly.
+3. **Budget for ADC noise.**
+   Quantisation noise with std $\sigma$ inflates measured RMS by $\sqrt{V_{RMS}^2 + \sigma^2}$. Oversampling or a front-end anti-alias filter directly reduces $\sigma$.
 
-4. **Check THD before trusting RMS.** High THD means the RMS includes harmonic power that may not be doing useful work. Use `compute_thd()` to decompose the measurement and `power_quality_analyzer()` for a single-call verdict.
+4. **Check THD before trusting an RMS reading.**
+   High THD means harmonic power is baked into the RMS figure. Use `compute_thd()` to decompose the spectrum, and `power_quality_analyzer()` for a single-call verdict.
 
-5. **Verify with Parseval.** After any change to the DSP chain, run `verify_parseval()` as a quick sanity check that power is being preserved correctly through the FFT pipeline.
+5. **Run `verify_parseval()` after any DSP change.**
+   It takes milliseconds and confirms the FFT pipeline is conserving energy correctly.
 
-6. **Calibrate against a known source.** Compare `rms_manual()` output against a traceable reference. Adjust the ADC gain factor until the library matches \(V_\text{pk}/\sqrt{2}\) for a known sinusoid.
+6. **Calibrate against a known source.**
+   Compare `rms_manual()` output against a traceable reference. Scale the ADC gain until the library returns exactly $V_{pk} / \sqrt{2}$ for a known sinusoid.
 
 Understanding these relationships ensures that the RMS values reported by the final smart-meter firmware truly reflect the real power drawn from the grid.
 
