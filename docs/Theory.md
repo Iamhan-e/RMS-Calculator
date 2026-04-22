@@ -114,7 +114,7 @@ where $T_{win} = W / f_s$ is the window duration in seconds.
 
 Real mains waveforms are never pure sinusoids. Non-linear loads — switched-mode power supplies, variable-speed drives, rectifiers — inject energy at integer multiples of the fundamental:
 
-$$v(t) = V_1 \sin(2\pi f_1 t + \phi_1) + \sum_{h=2}^{H} V_h \sin(2\pi h f_1 t + \phi_h)$$
+$$\text{THD} = \frac{\sqrt{V_{2,RMS}^2 + V_{3,RMS}^2 + \cdots + V_{H,RMS}^2}}{V_{1,RMS}} \times 100\%$$
 
 **THD** measures how much of the total signal energy lives in harmonics, relative to the fundamental:
 
