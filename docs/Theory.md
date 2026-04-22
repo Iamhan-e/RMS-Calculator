@@ -116,9 +116,8 @@ Real mains waveforms are never pure sinusoids. Non-linear loads — switched-mod
 
 $$\text{THD} = \frac{\sqrt{V_{2,RMS}^2 + V_{3,RMS}^2 + \cdots + V_{H,RMS}^2}}{V_{1,RMS}} \times 100\%$$
 
-**THD** measures how much of the total signal energy lives in harmonics, relative to the fundamental:
+**THD** measures how much of the total signal energy lives in harmonics, relative to the fundamental
 
-$$\boxed{\text{THD} = \frac{\sqrt{V_{2,RMS}^2 + V_{3,RMS}^2 + \cdots + V_{H,RMS}^2}}{V_{1,RMS}} \times 100\%}$$
 
 ### How `compute_thd()` Works
 
