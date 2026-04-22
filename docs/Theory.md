@@ -27,7 +27,7 @@ $$v(t) = V_{pk} \cdot \sin(2\pi f t)$$
 
 Its RMS value has a clean closed form:
 
-$$\boxed{V_{RMS} = \frac{V_{pk}}{\sqrt{2}} \approx 0.707 \cdot V_{pk}}$$
+$$V_{RMS = \frac{V_{pk}}{\sqrt{2}} \approx 0.707 \cdot V_{pk}}$$
 
 **Why?** Over one full period, the average of $\sin^2$ is exactly $\frac{1}{2}$, so $\sqrt{\text{mean}(\sin^2)} = \frac{1}{\sqrt{2}}$.
 
@@ -49,7 +49,7 @@ $$\text{RMS}_{total}^2 = V_{RMS}^2 + \sigma^2$$
 
 Taking the square root:
 
-$$\boxed{\text{RMS}_{total} = \sqrt{V_{RMS}^2 + \sigma^2}}$$
+$$\text{RMS_{total} = \sqrt{V_{RMS}^2 + \sigma^2}}$$
 
 **Key insight — noise adds in quadrature.** It always inflates RMS, never reduces it, and the relationship is nonlinear: small noise has very little effect, but large noise dominates.
 
@@ -70,7 +70,7 @@ $$v_{bias}(t) = v(t) + V_{DC}$$
 
 The DC term contributes permanently to the squared mean:
 
-$$\boxed{\text{RMS}_{bias} = \sqrt{V_{RMS}^2 + V_{DC}^2}}$$
+$$\text{RMS_{bias} = \sqrt{V_{RMS}^2 + V_{DC}^2}}$$
 
 The DC component never cancels, even though it carries no AC power. **Always strip DC before computing RMS** — use a high-pass filter with a cutoff well below mains frequency (e.g., 0.5 Hz).
 
@@ -118,7 +118,7 @@ $$v(t) = V_1 \sin(2\pi f_1 t + \phi_1) + \sum_{h=2}^{H} V_h \sin(2\pi h f_1 t + 
 
 **THD** measures how much of the total signal energy lives in harmonics, relative to the fundamental:
 
-$$\boxed{\text{THD} = \frac{\sqrt{V_{2,RMS}^2 + V_{3,RMS}^2 + \cdots + V_{H,RMS}^2}}{V_{1,RMS}} \times 100\%}$$
+$$\text{THD} = \frac{\sqrt{V_{2,RMS}^2 + V_{3,RMS}^2 + \cdots + V_{H,RMS}^2}}{V_{1,RMS}} \times 100\%$$
 
 ### How `compute_thd()` Works
 
@@ -192,7 +192,7 @@ $$\varepsilon_{RMS} = \frac{\sqrt{V_{RMS}^2 + \sigma^2} \;-\; V_{RMS}}{V_{RMS}} 
 
 The **crest factor** is the ratio of peak amplitude to RMS:
 
-$$\boxed{CF = \frac{|v|_{peak}}{V_{RMS}}}$$
+$$CF = \frac{|v|_{peak}{V_{RMS}}}$$
 
 | Waveform | Crest Factor |
 |----------|-------------|
